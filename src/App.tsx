@@ -12,7 +12,8 @@ import { useDataStats } from "./hooks/useDataStats";
 
 const StyledExcelViewer = () => {
   // Custom hooks handle all logic
-  const { data, fileName, hasData, loadFile, exportData, resetData } = useExcelData();
+  const { data, fileName, hasData, loadFile, exportData, resetData } =
+    useExcelData();
   const {
     filtering,
     setFiltering,
@@ -89,3 +90,4 @@ const StyledExcelViewer = () => {
 };
 
 export default StyledExcelViewer;
+
