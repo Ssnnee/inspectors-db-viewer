@@ -27,7 +27,6 @@ const StyledExcelViewer = () => {
   } = useDataFiltering(data);
   const { femaleCount, maleCount } = useDataStats(data);
 
-  // Show upload screen if no data loaded
   if (!hasData) {
     return <FileUpload onFileUpload={loadFile} />;
   }
