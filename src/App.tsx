@@ -46,7 +46,7 @@ const StyledExcelViewer = () => {
         }
       `}</style>
 
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full">
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200">
           <DataHeader
             fileName={fileName}

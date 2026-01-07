@@ -7,18 +7,48 @@ interface DataTableProps {
   onSort: (key: string) => void;
 }
 
+// Function to convert Excel serial date to readable date
+const excelDateToJSDate = (serial: number): string => {
+  const utc_days = Math.floor(serial - 25569);
+  const utc_value = utc_days * 86400;
+  const date_info = new Date(utc_value * 1000);
+
+  const day = String(date_info.getDate()).padStart(2, "0");
+  const month = String(date_info.getMonth() + 1).padStart(2, "0");
+  const year = date_info.getFullYear();
+
+  return `${day}/${month}/${year}`;
+};
+
+// Function to check if a value is likely an Excel date
+const isExcelDate = (value: string | number | boolean | null | undefined, header: string): boolean => {
+  const isDateColumn =
+    header.toLowerCase().includes("date") ||
+    header.toLowerCase().includes("naissance") ||
+    header.toLowerCase().includes("recrutement") ||
+    header.toLowerCase().includes("avancement") ||
+    header.toLowerCase().includes("retraite");
+
+  return (
+    isDateColumn && typeof value === "number" && value > 0 && value < 100000
+  );
+};
+
 export function DataTable({ data, headers, onSort }: DataTableProps) {
-  const renderCellValue = (header: string, value: string | number | boolean | null | undefined) => {
-    const isSexeColumn =
-      header === "Sexe" ||
-      header === "sexe" ||
-      header === "SEXE";
-    const isSalaireColumn = header
-      .toLowerCase()
-      .includes("salaire");
-    const isMatriculeColumn = header
-      .toLowerCase()
-      .includes("matricule");
+  const renderCellValue = (
+    header: string,
+    value: string | number | boolean | null | undefined,
+  ) => {
+    // Handle Excel date numbers
+    if (isExcelDate(value, header)) {
+      const formattedDate = excelDateToJSDate(value as number);
+      return <span className="text-slate-700">{formattedDate}</span>;
+    }
+
+    const isSexeColumn = header.toUpperCase() === "SEXE";
+    const isMatriculeColumn = header.toUpperCase() === "MATRICULE";
+    const isAgeColumn =
+      header.toUpperCase() === "AGE" || header.toUpperCase().includes("ANNEES");
 
     if (isSexeColumn) {
       return (
@@ -34,29 +64,24 @@ export function DataTable({ data, headers, onSort }: DataTableProps) {
           {value || "-"}
         </span>
       );
-    } else if (isSalaireColumn && typeof value === "number") {
-      return (
-        <span className="font-semibold text-green-700">
-          {value.toLocaleString("fr-FR")} €
-        </span>
-      );
     } else if (isMatriculeColumn) {
       return (
         <span className="font-mono font-semibold text-slate-700">
           {value || "-"}
         </span>
       );
+    } else if (isAgeColumn && typeof value === "number") {
+      return <span className="font-semibold text-indigo-700">{value}</span>;
     } else {
-      return (
-        <span className="text-slate-700">
-          {value || "-"}
-        </span>
-      );
+      // Handle empty strings and null values
+      const displayValue =
+        value === "" || value === null || value === undefined ? "-" : value;
+      return <span className="text-slate-700">{String(displayValue)}</span>;
     }
   };
 
   const getRowClasses = (row: DataRow) => {
-    const sexe = row["Sexe"] || row["sexe"] || row["SEXE"];
+    const sexe = row["SEXE"] || row["Sexe"] || row["sexe"];
     const isFemale = sexe === "F";
     const isMale = sexe === "M";
 
@@ -95,10 +120,7 @@ export function DataTable({ data, headers, onSort }: DataTableProps) {
               <tr key={rowIndex} className={getRowClasses(row)}>
                 {headers.map((header) => {
                   const value = row[header];
-                  const isSexeColumn =
-                    header === "Sexe" ||
-                    header === "sexe" ||
-                    header === "SEXE";
+                  const isSexeColumn = header.toUpperCase() === "SEXE";
 
                   return (
                     <td
@@ -128,3 +150,4 @@ export function DataTable({ data, headers, onSort }: DataTableProps) {
     </div>
   );
 }
+
